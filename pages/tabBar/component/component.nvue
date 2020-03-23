@@ -1,0 +1,340 @@
+<template>
+	<view class="uni-container">
+		<uni-calendar :insert="true" :lunar="true" ref="fff" @change="chang"></uni-calendar>
+		<uni-combox label="所在城市" @input="inp" :candidates="candidates" placeholder="请选择所在城市" v-model="city"></uni-combox>
+		<scroll-view
+			style="height: 300px;"
+			scroll-y="true"
+			refresher-enabled="true"
+			:refresher-triggered="triggered"
+			:refresher-threshold="100"
+			refresher-background="lightgreen"
+			@refresherpulling="onPulling"
+			@refresherrefresh="onRefresh"
+			@refresherrestore="onRestore"
+			@refresherabort="onAbort"
+		>
+			<button @click="cs" type="warn">警告</button>
+		</scroll-view>
+
+		<!-- <view class=""></view> -->
+		<!-- <uni-swipe-action>
+			<uni-swipe-action-item :options="options"><view class="cont">item1</view></uni-swipe-action-item>
+			<uni-swipe-action-item :options="options"><view class="cont">item2</view></uni-swipe-action-item>
+			<uni-swipe-action-item :options="options"><view class="cont">item3</view></uni-swipe-action-item>
+		</uni-swipe-action> -->
+		<uni-swipe-action>
+			<uni-swipe-action-item :options="options" @click="onClick" @change="chang"><view class="cont">SwipeAction 基础使用场景</view></uni-swipe-action-item>
+		</uni-swipe-action>
+		<picker mode="selector" :range="['李四', '张三']" @change="chang"><view>11</view></picker>
+		<uni-load-more @clickLoadMore="ss" showIcon="true" status="more"></uni-load-more>
+		<uni-pagination title="哈哈哈" total="300" current="1"></uni-pagination>
+		<swiper :indicator-dots="true" :autoplay="true" :interval="3000" :duration="1000" circular="true">
+			<swiper-item>
+				<view class="swiper-item"><image width="70%" height="100%" src="../../../static/app-home-image/banner-home-1.png" mode=""></image></view>
+			</swiper-item>
+			<swiper-item>
+				<view class="swiper-item"><image width="70%" height="100%" src="../../../static/app-home-image/banner-home-2.png" mode=""></image></view>
+			</swiper-item>
+			<swiper-item>
+				<view class="swiper-item"><image width="70%" height="100%" src="../../../static/app-home-image/banner-home-3.png" mode=""></image></view>
+			</swiper-item>
+		</swiper>
+		<!--     <view class="uni-header-logo">
+            <image class="uni-header-image" src="/static/componentIndex.png"></image>
+        </view> -->
+		<view class="uni-hello-text">
+			<text class="hello-text">uni-app内置组件，展示样式仅供参考，文档详见：</text>
+			<u-link class="hello-link" :href="'https://uniapp.dcloud.io/component/'" :text="'https://uniapp.dcloud.io/component/'" :inWhiteList="true"></u-link>
+		</view>
+		<view class="uni-panel" v-for="(item, index) in list" :key="item.id">
+			<view class="uni-panel-h" :class="item.open ? 'uni-panel-h-on' : ''" @click="triggerCollapse(index)">
+				<text class="uni-panel-text">{{ item.name }}</text>
+				<text class="uni-panel-icon uni-icon" :class="item.open ? 'uni-panel-icon-on' : ''">{{ item.pages ? '&#xe581;' : '&#xe470;' }}</text>
+			</view>
+			<view class="uni-panel-c" v-if="item.open">
+				<view class="uni-navigate-item" v-for="(item2, key) in item.pages" :key="key" @click="goDetailPage(item2)">
+					<text class="uni-navigate-text">{{ item2.name ? item2.name : item2 }}</text>
+					<text class="uni-navigate-icon uni-icon">&#xe470;</text>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+<script>
+import uniSwipeAction from '@/components/uni-swipe-action/uni-swipe-action.vue';
+import uniSwipeActionItem from '@/components/uni-swipe-action-item/uni-swipe-action-item.vue';
+// TODO 修复Android v3 加载过慢问题
+// #ifdef APP-PLUS
+var domModule = weex.requireModule('dom');
+domModule.addRule('fontFace', {
+	fontFamily: 'uniicons',
+	src: "url('/static/uni.ttf')"
+});
+// #endif
+
+import uLink from '@/components/uLink.vue';
+import uniCombox from '@/components/uni-combox/uni-combox';
+import uniCalendar from '@/components/uni-calendar/uni-calendar.vue';
+export default {
+	components: {
+		uLink,
+		uniSwipeAction,
+		uniSwipeActionItem,
+		uniCombox,
+		uniCalendar
+	},
+	data() {
+		return {
+			candidates: ['北京', '上海'],
+			city: '',
+			options: [
+				{
+					text: '取消',
+					style: {
+						backgroundColor: '#007aff'
+					}
+				},
+				{
+					text: '确认',
+					style: {
+						backgroundColor: '#dd524d'
+					}
+				}
+			],
+			list: [
+				{
+					id: 'view',
+					name: '视图容器',
+					open: false,
+					pages: [
+						'view',
+						'scroll-view',
+						'swiper',
+						// #ifndef MP-TOUTIAO
+						'movable-view',
+						'cover-view'
+						// #endif
+					]
+				},
+				{
+					id: 'content',
+					name: '基础内容',
+					open: false,
+					pages: ['text', 'rich-text', 'progress']
+				},
+				{
+					id: 'form',
+					name: '表单组件',
+					open: false,
+					pages: [
+						'button',
+						'checkbox',
+						'form',
+						'input',
+						'label',
+						'picker',
+						'picker-view',
+						'radio',
+						'slider',
+						'switch',
+						'textarea',
+						// #ifdef APP-PLUS || MP-WEIXIN || H5
+						'editor'
+						// #endif
+					]
+				},
+				{
+					id: 'nav',
+					name: '导航',
+					open: false,
+					pages: ['navigator']
+				},
+				{
+					id: 'media',
+					name: '媒体组件',
+					open: false,
+					pages: [
+						'image',
+						'video',
+						// #ifndef MP-ALIPAY || MP-TOUTIAO
+						'audio'
+						// #endif
+					]
+				},
+				// #ifndef MP-TOUTIAO
+				{
+					id: 'map',
+					name: '地图',
+					open: false,
+					pages: ['map']
+				},
+				// #endif
+				{
+					id: 'canvas',
+					name: '画布',
+					open: false,
+					pages: ['canvas']
+				},
+				// #ifdef APP-PLUS
+				{
+					id: 'web-view',
+					name: '网页',
+					open: false,
+					pages: [
+						{
+							name: '网络网页',
+							url: '/pages/component/web-view/web-view'
+						},
+						{
+							name: '本地网页',
+							url: '/pages/component/web-view-local/web-view-local'
+						}
+					]
+				},
+				// #endif
+				// #ifndef APP-PLUS
+				{
+					id: 'web-view',
+					name: '网页',
+					open: false,
+					pages: ['web-view']
+				},
+				// #endif
+				// #ifndef H5 || MP-BAIDU
+				{
+					url: 'ad',
+					name: 'AD组件',
+					open: false
+				}
+				// #endif
+			],
+			navigateFlag: false
+		};
+	},
+	onTabItemTap(i) {
+		console.log(i,'点击');
+	},
+	mounted() {
+		console.log(this.$refs.fff, 'fff');
+	},
+	onShareAppMessage() {
+		return {
+			title: '欢迎体验uni-app',
+			path: '/pages/tabBar/component/component'
+		};
+	},
+	onNavigationBarButtonTap(e) {
+		uni.navigateTo({
+			url: '/pages/about/about'
+		});
+	},
+	onPullDownRefresh() {
+		console.log('下拉刷新');
+		setTimeout(() => {
+			// 0.6秒后停止刷新
+			wx.stopPullDownRefresh();
+		}, 600);
+	},
+	created() {
+		uni.request({
+			url: 'http://api.zhuishushenqi.com/ranking/gender', //仅为示例，并非真实接口地址。
+			data: {
+				text: 'uni.request'
+			},
+			header: {
+				'custom-header': 'hello' //自定义请求头信息
+			},
+			success: res => {
+				console.log(res, 'res');
+				// this.text = 'request success';
+			}
+		});
+	},
+	methods: {
+		inp(i) {
+			console.log(i, 'dd');
+		},
+		onPulling(e) {
+			console.log('onpulling', e);
+		},
+		onRefresh() {
+			if (this._freshing) return;
+			this._freshing = true;
+			setTimeout(() => {
+				this.triggered = false;
+				this._freshing = false;
+			}, 3000);
+		},
+		onRestore() {
+			this.triggered = 'restore'; // 需要重置
+			console.log('onRestore');
+		},
+		onAbort() {
+			console.log('onAbort');
+		},
+		cs() {
+			console.log(1);
+			uni.openBluetoothAdapter({
+				success(res) {
+					console.log(res);
+				}
+			});
+			// 查看网络状态
+			// uni.getNetworkType({
+			//     success: function (res) {
+			//         console.log(res.networkType);
+			//     }
+			// });
+			// uni.pageScrollTo({
+			//     scrollTop: 100,
+			//     duration: 300
+			// });
+		},
+		onClick(l) {
+			console.log('点击了', l);
+		},
+		chang(e) {
+			console.log(e, 'e');
+		},
+		ss(i) {
+			console.log(i, 'i');
+		},
+		triggerCollapse(e) {
+			if (!this.list[e].pages) {
+				this.goDetailPage(this.list[e].url);
+				return;
+			}
+			for (var i = 0; i < this.list.length; ++i) {
+				if (e === i) {
+					this.list[i].open = !this.list[e].open;
+				} else {
+					this.list[i].open = false;
+				}
+			}
+		},
+		goDetailPage(e) {
+			if (this.navigateFlag) {
+				return;
+			}
+			this.navigateFlag = true;
+			if (typeof e === 'string') {
+				uni.navigateTo({
+					url: '/pages/component/' + e + '/' + e
+				});
+			} else {
+				uni.navigateTo({
+					url: e.url
+				});
+			}
+			setTimeout(() => {
+				this.navigateFlag = false;
+			}, 200);
+		}
+	}
+};
+</script>
+
+<style>
+@import '../../../common/uni-nvue.css';
+</style>
